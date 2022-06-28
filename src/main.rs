@@ -11,10 +11,72 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Interval {
+    Unison,
+    MinorSecond,
+    MajorSecond,
+    MinorThird,
+    MajorThird,
+    Fourth,
+    DiminishedFifth,
+    Fifth,
+    MinorSixth,
+    MajorSixth,
+    MinorSeventh,
+    MajorSeventh,
+    Octave,
+}
+
+impl Interval {
+    pub fn equal_temperament_ratio(&self) -> f32 {
+        use Interval::*;
+
+        let half_step_factor = 2_f32.powf(1. / 12.);
+
+        match self {
+            Unison => 1.0,
+            MinorSecond => half_step_factor,
+            MajorSecond => half_step_factor.powf(2.),
+            MinorThird => half_step_factor.powf(3.),
+            MajorThird => half_step_factor.powf(4.),
+            Fourth => half_step_factor.powf(5.),
+            DiminishedFifth => half_step_factor.powf(6.),
+            Fifth => half_step_factor.powf(7.),
+            MinorSixth => half_step_factor.powf(8.),
+            MajorSixth => half_step_factor.powf(9.),
+            MinorSeventh => half_step_factor.powf(10.),
+            MajorSeventh => half_step_factor.powf(11.),
+            Octave => 2.,
+        }
+    }
+
+    pub fn major_triad_freqs(fundamental: f32) -> [f32; 3] {
+        [
+            fundamental,
+            fundamental * Interval::MajorThird.equal_temperament_ratio(),
+            fundamental * Interval::Fifth.equal_temperament_ratio(),
+        ]
+    }
+
+    pub fn by_interval(self, from: f32) -> f32 {
+        from * self.equal_temperament_ratio()
+    }
+}
+
 fn sample_next(o: &mut SampleRequestOptions) -> f32 {
     o.tick();
-    o.tone(440.) * 0.1 + o.tone(680.) * 0.1
-    // combination of several tones
+
+    let c_freq = 440.;
+
+    let c_maj = Interval::major_triad_freqs(c_freq);
+
+    let c_maj: f32 = c_maj.iter().map(|f| o.tone(*f)).sum();
+
+    // c_maj
+    // o.tone(Interval::MajorSeventh.by_interval(c_freq))
+
+    o.tone(Interval::MajorSixth.by_interval(c_freq))
 }
 
 pub struct SampleRequestOptions {
