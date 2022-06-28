@@ -73,10 +73,10 @@ fn sample_next(o: &mut SampleRequestOptions) -> f32 {
 
     let c_maj: f32 = c_maj.iter().map(|f| o.tone(*f)).sum();
 
-    // c_maj
+    c_maj
     // o.tone(Interval::MajorSeventh.by_interval(c_freq))
 
-    o.tone(Interval::MajorSixth.by_interval(c_freq))
+    // o.tone(Interval::MajorSixth.by_interval(c_freq))
 }
 
 pub struct SampleRequestOptions {
