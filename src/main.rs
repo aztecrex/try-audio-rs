@@ -6,7 +6,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 fn main() -> anyhow::Result<()> {
     // let stream = stream_setup_for(sample_next)?;
-    let stream = stream_setup2_for(sample_next2)?;
+    let stream = stream_setup_for(sample_next2)?;
     stream.play()?;
     std::thread::sleep(std::time::Duration::from_millis(3000));
     Ok(())
@@ -94,37 +94,7 @@ fn sample_next2(osc: &mut SineWave) -> f32 {
     osc.next()
 }
 
-// fn sample_next(o: &mut SampleRequestOptions) -> f32 {
-//     o.tick();
-
-//     let c_freq = 440.;
-
-//     let c_maj = Interval::major_triad_freqs(c_freq);
-
-//     let c_maj: f32 = c_maj.iter().map(|f| o.tone(*f)).sum();
-
-//     c_maj
-//     // o.tone(Interval::MajorSeventh.by_interval(c_freq))
-
-//     // o.tone(Interval::MajorSixth.by_interval(c_freq))
-// }
-
-// pub struct SampleRequestOptions {
-//     pub sample_rate: f32,
-//     pub sample_clock: f32,
-//     pub nchannels: usize,
-// }
-
-// impl SampleRequestOptions {
-//     fn tone(&self, freq: f32) -> f32 {
-//         (self.sample_clock * freq * 2.0 * std::f32::consts::PI / self.sample_rate).sin()
-//     }
-//     fn tick(&mut self) {
-//         self.sample_clock = (self.sample_clock + 1.0) % self.sample_rate;
-//     }
-// }
-
-pub fn stream_setup2_for<F>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
+pub fn stream_setup_for<F>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
 where
     F: FnMut(&mut SineWave) -> f32 + Send + 'static + Copy,
 {
