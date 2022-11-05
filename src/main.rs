@@ -137,19 +137,6 @@ where
     }
 }
 
-// pub fn stream_setup_for<F>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
-// where
-//     F: FnMut(&mut SampleRequestOptions) -> f32 + std::marker::Send + 'static + Copy,
-// {
-//     let (_host, device, config) = host_device_setup()?;
-
-//     match config.sample_format() {
-//         cpal::SampleFormat::F32 => stream_make::<f32, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::I16 => stream_make::<i16, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::U16 => stream_make::<u16, _>(&device, &config.into(), on_sample),
-//     }
-// }
-
 pub fn host_device_setup(
 ) -> Result<(cpal::Host, cpal::Device, cpal::SupportedStreamConfig), anyhow::Error> {
     let host = cpal::default_host();
@@ -183,7 +170,7 @@ where
     let stream = device.build_output_stream(
         config,
         move |output: &mut [T], _: &cpal::OutputCallbackInfo| {
-            on_window2(output, nchannels, &mut osc, on_sample)
+            on_window(output, nchannels, &mut osc, on_sample)
         },
         err_fn,
     )?;
@@ -191,7 +178,7 @@ where
     Ok(stream)
 }
 
-fn on_window2<T, F, O>(output: &mut [T], nchannels: usize, osc: &mut O, mut on_sample: F)
+fn on_window<T, F, O>(output: &mut [T], nchannels: usize, osc: &mut O, mut on_sample: F)
 where
     T: cpal::Sample,
     F: FnMut(&mut O) -> f32 + std::marker::Send + 'static,
