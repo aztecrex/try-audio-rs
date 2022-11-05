@@ -6,7 +6,7 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 fn main() -> anyhow::Result<()> {
     // let stream = stream_setup_for(sample_next)?;
-    let stream = stream_setup_for(sample_next2)?;
+    let stream = stream_setup_for(sample_next)?;
     stream.play()?;
     std::thread::sleep(std::time::Duration::from_millis(3000));
     Ok(())
@@ -90,7 +90,7 @@ impl Interval {
     }
 }
 
-fn sample_next2(osc: &mut SineWave) -> f32 {
+fn sample_next(osc: &mut SineWave) -> f32 {
     osc.next()
 }
 
