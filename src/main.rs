@@ -90,13 +90,14 @@ impl Interval {
     }
 }
 
-fn sample_next(osc: &mut SineWave) -> f32 {
+fn sample_next(osc: &mut impl Oscillator) -> f32 {
     osc.next()
 }
 
-pub fn stream_setup_for<F>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
+pub fn stream_setup_for<F, O>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
 where
-    F: FnMut(&mut SineWave) -> f32 + Send + 'static + Copy,
+    O: Oscillator,
+    F: FnMut(&mut O) -> f32 + Send + 'static + Copy,
 {
     let (_host, device, config) = host_device_setup()?;
 
@@ -122,14 +123,15 @@ pub fn host_device_setup(
     Ok((host, device, config))
 }
 
-pub fn stream_make<T, F>(
+pub fn stream_make<T, F, O>(
     device: &cpal::Device,
     config: &cpal::StreamConfig,
     on_sample: F,
 ) -> Result<cpal::Stream, anyhow::Error>
 where
+    O: Oscillator,
     T: cpal::Sample,
-    F: FnMut(&mut SineWave) -> f32 + std::marker::Send + 'static + Copy,
+    F: FnMut(&mut O) -> f32 + std::marker::Send + 'static + Copy,
 {
     let sample_rate = config.sample_rate.0;
     // let sample_clock = 0f32;
