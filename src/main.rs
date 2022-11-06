@@ -7,9 +7,20 @@ use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 fn main() -> anyhow::Result<()> {
     let (_host, device, config) = host_device_setup()?;
 
-    let synth = SineWave::new(470., config.sample_rate().0);
+    let fundamental = 440.;
+    let third = Interval::MajorThird.by_interval(fundamental);
+    let fifth = Interval::Fifth.by_interval(fundamental);
 
-    // let handler = make_on_data(synth, &config.into());
+    let fundamental = SineWave::new(fundamental, config.sample_rate().0);
+    let third = SineWave::new(third, config.sample_rate().0);
+    let fifth = SineWave::new(fifth, config.sample_rate().0);
+
+    let parts = [fundamental, third, fifth];
+    // let parts = parts.into_iter();
+    // let parts = parts;
+    let synth = Mixer::new(parts);
+
+    // let synth: Mixer = Mixer::new([fundamental, third, fifth].into_iter().map(Box::new)).collect();
 
     let stream = make_stream2(device, config, synth)?;
 
@@ -17,6 +28,24 @@ fn main() -> anyhow::Result<()> {
     stream.play()?;
     std::thread::sleep(std::time::Duration::from_millis(3000));
     Ok(())
+}
+
+pub struct Mixer(Vec<SineWave>);
+
+impl Mixer {
+    pub fn new<I>(oscillators: I) -> Self
+    where
+        I: IntoIterator<Item = SineWave>,
+    {
+        Self(oscillators.into_iter().collect())
+    }
+}
+
+impl Oscillator for Mixer {
+    fn next(&mut self) -> f32 {
+        let amp = 1. / self.0.len() as f32;
+        self.0.iter_mut().map(|o| o.next() * amp).sum()
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -36,7 +65,7 @@ pub enum Interval {
     Octave,
 }
 
-pub trait Oscillator {
+pub trait Oscillator: Sized {
     fn next(&mut self) -> f32;
 }
 
