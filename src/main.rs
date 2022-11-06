@@ -1,7 +1,3 @@
-/* This example expose parameter to pass generator of sample.
-Good starting point for integration of cpal into your application.
-*/
-
 use cpal::traits::{DeviceTrait, HostTrait, StreamTrait};
 
 fn main() -> anyhow::Result<()> {
@@ -16,15 +12,9 @@ fn main() -> anyhow::Result<()> {
     let fifth = SineWave::new(fifth, config.sample_rate().0);
 
     let parts = [fundamental, third, fifth];
-    // let parts = parts.into_iter();
-    // let parts = parts;
     let synth = Mixer::new(parts);
-
-    // let synth: Mixer = Mixer::new([fundamental, third, fifth].into_iter().map(Box::new)).collect();
-
     let stream = make_stream2(device, config, synth)?;
 
-    // let stream = stream_setup_for(sample_next)?;
     stream.play()?;
     std::thread::sleep(std::time::Duration::from_millis(3000));
     Ok(())
@@ -150,45 +140,6 @@ fn make_stream2(
     Ok(stream)
 }
 
-// fn make_stream<O>(
-//     device: cpal::Device,
-//     config: cpal::SupportedStreamConfig,
-//     synth: O,
-// ) -> Result<cpal::Stream, anyhow::Error>
-// where
-//     O: Oscillator + Send,
-// {
-//     let handler = match config.sample_format() {
-//         cpal::SampleFormat::F32 => make_on_data::<f32>(synth, &config.into()),
-//         cpal::SampleFormat::I16 => make_on_data::<i16>(synth, &config.into()),
-//         cpal::SampleFormat::U16 => make_on_data::<u16>(synth, &config.into()),
-//     };
-
-//     match config.sample_format() {
-//         cpal::SampleFormat::F32 => stream_make::<f32, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::I16 => stream_make::<i16, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::U16 => stream_make::<u16, _>(&device, &config.into(), on_sample),
-//     }
-// }
-
-// fn sample_next(osc: &mut impl Oscillator) -> f32 {
-//     osc.next()
-// }
-
-// pub fn stream_setup_for<F, O>(on_sample: F) -> Result<cpal::Stream, anyhow::Error>
-// where
-//     O: Oscillator,
-//     F: FnMut(&mut O) -> f32 + Send + 'static + Copy,
-// {
-//     let (_host, device, config) = host_device_setup()?;
-
-//     match config.sample_format() {
-//         cpal::SampleFormat::F32 => stream_make::<f32, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::I16 => stream_make::<i16, _>(&device, &config.into(), on_sample),
-//         cpal::SampleFormat::U16 => stream_make::<u16, _>(&device, &config.into(), on_sample),
-//     }
-// }
-
 pub fn host_device_setup(
 ) -> Result<(cpal::Host, cpal::Device, cpal::SupportedStreamConfig), anyhow::Error> {
     let host = cpal::default_host();
@@ -203,35 +154,6 @@ pub fn host_device_setup(
 
     Ok((host, device, config))
 }
-
-// pub fn stream_make<Sam, F, O>(
-//     device: &cpal::Device,
-//     config: &cpal::StreamConfig,
-//     on_sample: F,
-// ) -> Result<cpal::Stream, anyhow::Error>
-// where
-//     O: Oscillator,
-//     Sam: cpal::Sample,
-//     F: FnMut(&mut O) -> f32 + std::marker::Send + 'static + Copy,
-// {
-//     let sample_rate = config.sample_rate.0;
-//     // let sample_clock = 0f32;
-//     let nchannels = config.channels as usize;
-//     let mut osc = SineWave::new(440., sample_rate);
-//     let err_fn = |err| eprintln!("Error building output sound stream: {}", err);
-
-//     let stream = device.build_output_stream(
-//         config,
-//         move |output: &mut [Sam], _: &cpal::OutputCallbackInfo| {
-//             on_window(output, nchannels, &mut osc, on_sample)
-//         },
-//         err_fn,
-//     )?;
-
-//     Ok(stream)
-// }
-
-// pub struct Stream(cpal::Stream);
 
 fn make_on_data<Sam>(
     mut osc: impl Oscillator + Send,
@@ -250,16 +172,3 @@ where
         }
     }
 }
-
-// fn on_window<T, F, O>(output: &mut [T], nchannels: u16, osc: &mut O, mut on_sample: F)
-// where
-//     T: cpal::Sample,
-//     F: FnMut(&mut O) -> f32 + std::marker::Send + 'static,
-// {
-//     for frame in output.chunks_mut(nchannels) {
-//         let value: T = cpal::Sample::from::<f32>(&on_sample(osc));
-//         for sample in frame.iter_mut() {
-//             *sample = value;
-//         }
-//     }
-// }
